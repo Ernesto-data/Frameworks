@@ -1,0 +1,40 @@
+# values.yaml — RAG Multimodal Demo
+# HPE Private Cloud AI — PCAI LASER 2025
+
+# ── App (Streamlit) ───────────────────────────────────────────
+app:
+  replicaCount: 1
+
+  image:
+    repository: "ernesto2397/rag-demo"
+    tag: "1.0.1"
+    pullPolicy: IfNotPresent
+
+  containerPort: 8501
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+  env:
+    VLM_ENDPOINT: "https://vision-rag-egg.project-user-ernesto-garibay.serving.hpepcai3.demo.local/v1"
+    VLM_TOKEN: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjlobTctX21Wcm9wSkVwMTduR0dRWHdNWjZBWHhPX0dQZzFadWx0Zkh0aTQifQ.eyJhdWQiOlsiYXBpIiwiaXN0aW8tY2EiXSwiZXhwIjoxNzc3NTc1MDc3LCJpYXQiOjE3NzQ5ODMwNzcsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiODU5ZjY4ZDMtODBmZi00M2VlLWJjYmMtNWFiNDBjMjYwMThkIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJ1aSIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJpc3ZjLWVwLTE3NzQ5ODMwNzczOTQiLCJ1aWQiOiJhNzZlZjllMi1iNTMwLTRhYjItYmM2Ny04NGM1OGM2ZjZmNzEifX0sIm5iZiI6MTc3NDk4MzA3Nywic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OnVpOmlzdmMtZXAtMTc3NDk4MzA3NzM5NCJ9.FNdJ7PP2crGZ3miYHWXJkkrtFs-WopKpEJ8PGFQle5aUH3g_8kSkDDFuLnDqZ-frIMD6q_gNWZ1G2pnHSNjmB3R3VRaJVn28_DLhXXqLzch95r31IGGUzL6yJZyHCPT_CXJP6nPW0BiRNfIQzY2Uzv5Via39fFjGwstO4cS9JoSgQ6c38X2d1JBxP-3xKywtCN45k6M2E_u_3VkJU4S17Z651d-chK_PeokI4M-cPooJrl3lzG6M48avqsaLS5K1Mf-Xhxxc-MD_uD74DfF8fRBrb1SXP0x_RbwUpBF8vaNLXJiV3CwIQ8PrbBktV0q93nFYmDh-vrYptst0aDGCFQ"
+    VLM_MODEL: "Qwen/Qwen2.5-VL-7B-Instruct"
+    EMBED_ENDPOINT: "https://emb-rag-egg.project-user-ernesto-garibay.serving.hpepcai3.demo.local/v1"
+    EMBED_TOKEN: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjlobTctX21Wcm9wSkVwMTduR0dRWHdNWjZBWHhPX0dQZzFadWx0Zkh0aTQifQ.eyJhdWQiOlsiYXBpIiwiaXN0aW8tY2EiXSwiZXhwIjoxNzc3NTY2MjczLCJpYXQiOjE3NzQ5NzQyNzMsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiZjM2YTIwNWQtZTM3My00ZjQzLThkYzgtZWY3ZDcwNmVkODc1Iiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJ1aSIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJpc3ZjLWVwLTE3NzQ5NzQyNzI5OTgiLCJ1aWQiOiJmYzU4OTQ5OS1iN2MwLTRlNmYtYTI5ZS0zZjQzNDU1OWZlYzYifX0sIm5iZiI6MTc3NDk3NDI3Mywic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OnVpOmlzdmMtZXAtMTc3NDk3NDI3Mjk5OCJ9.fMXKNWtjCFQiAKsdhtLQTOUyscvyul4TPPCuHOSQKOkjKk8res28Q7AzqAzZQAffwzVZ3fmHLSKfy5Bq7LUNqjcp2jX7A1GltKzB9d36-GEcPuT__49Ok6PKR9IQjZXHWoDw_jcFrCJNLHyFYyUjJhXpZv2oUgkeX5k2ytT2m8sKh588QRDmOpNT9TZjTJjkXo9uZORyAd3ld6NCgre6xLECJamDHRKQKAwzyFo16GyJ9zErmyZ_lhpwcR7qqN2w6AwqQmb8pb4Y7Bw9nmE4OQZ8Z8eMyQ32oEqw7IEmwiLd3C4P7Y0dSBwjK0qxyT7b860lqwJZ0M_8hEAs2EmmAg"
+    EMBED_MODEL: "BAAI/bge-m3"
+
+# ── Service ───────────────────────────────────────────────────
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8501
+
+# ── PCAI / EZUA ───────────────────────────────────────────────
+ezua:
+  autoHelm: true
+  

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rag-demo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rag-demo.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "rag-demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "rag-demo.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: rag-demo
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.containerPort }}
+              protocol: TCP
+          env:
+            - name: VLM_ENDPOINT
+              value: {{ .Values.app.env.VLM_ENDPOINT | quote }}
+            - name: VLM_TOKEN
+              value: {{ .Values.app.env.VLM_TOKEN | quote }}
+            - name: VLM_MODEL
+              value: {{ .Values.app.env.VLM_MODEL | quote }}
+            - name: EMBED_ENDPOINT
+              value: {{ .Values.app.env.EMBED_ENDPOINT | quote }}
+            - name: EMBED_TOKEN
+              value: {{ .Values.app.env.EMBED_TOKEN | quote }}
+            - name: EMBED_MODEL
+              value: {{ .Values.app.env.EMBED_MODEL | quote }}
+          resources:
+            {{- toYaml .Values.app.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.app.containerPort }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.app.containerPort }}
+            initialDelaySeconds: 60
+            periodSeconds: 20
