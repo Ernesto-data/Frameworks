@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - name: ace-banking
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: LLM_URL
+          value: {{ .Values.env.llmUrl | quote }}
+        - name: LLM_TOKEN
+          value: {{ .Values.env.llmToken | quote }}
+        - name: LLM_MODEL
+          value: {{ .Values.env.llmModel | quote }}
+        - name: ASR_URL
+          value: {{ .Values.env.asrUrl | quote }}
+        - name: ASR_TOKEN
+          value: {{ .Values.env.asrToken | quote }}
+        - name: TTS_URL
+          value: {{ .Values.env.ttsUrl | quote }}
+        - name: TTS_TOKEN
+          value: {{ .Values.env.ttsToken | quote }}
+        - name: TTS_VOICE
+          value: {{ .Values.env.ttsVoice | quote }}
+        ports:
+        - containerPort: 8100
+          name: http
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.memory | quote }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.memory | quote }}
