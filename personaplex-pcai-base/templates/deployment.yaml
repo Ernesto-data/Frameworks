@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "personaplex-pcai.fullname" . }}
+  labels:
+    {{- include "personaplex-pcai.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "personaplex-pcai.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "personaplex-pcai.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        hpe-ezua/app: {{ include "personaplex-pcai.fullname" . }}
+        hpe-ezua/component: inference
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.huggingface.existingSecret }}
+                  key: HF_TOKEN
+
+            - name: HOME
+              value: {{ .Values.persistence.mountPath | quote }}
+
+            - name: XDG_CACHE_HOME
+              value: {{ .Values.persistence.mountPath | quote }}
+
+            - name: HF_HOME
+              value: "{{ .Values.persistence.mountPath }}/huggingface"
+
+            - name: TRANSFORMERS_CACHE
+              value: "{{ .Values.persistence.mountPath }}/huggingface"
+
+            - name: HUGGINGFACE_HUB_CACHE
+              value: "{{ .Values.persistence.mountPath }}/huggingface/hub"
+
+            - name: USER
+              value: "personaplex"
+
+            - name: LOGNAME
+              value: "personaplex"
+
+            - name: TORCHINDUCTOR_COMPILE_THREADS
+              value: "1"
+
+            - name: TORCHDYNAMO_VERBOSE
+              value: "0"
+
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+              nvidia.com/gpu: {{ index .Values.resources.requests "nvidia.com/gpu" | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
+              nvidia.com/gpu: {{ index .Values.resources.limits "nvidia.com/gpu" | quote }}
+
+          volumeMounts:
+            - name: cache-volume
+              mountPath: {{ .Values.persistence.mountPath }}
+
+      volumes:
+        - name: cache-volume
+          persistentVolumeClaim:
+            claimName: {{ include "personaplex-pcai.fullname" . }}-pvc
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

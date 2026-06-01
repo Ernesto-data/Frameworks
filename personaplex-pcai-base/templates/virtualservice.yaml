@@ -1,0 +1,19 @@
+{{- if and .Values.ezua.enabled .Values.ezua.virtualService.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "personaplex-pcai.fullname" . }}
+  labels:
+    {{- include "personaplex-pcai.labels" . | nindent 4 }}
+spec:
+  gateways:
+    - {{ .Values.ezua.virtualService.gateway }}
+  hosts:
+    - {{ .Values.ezua.virtualService.host | quote }}
+  http:
+    - route:
+        - destination:
+            host: {{ include "personaplex-pcai.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
+{{- end }}

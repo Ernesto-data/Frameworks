@@ -1,0 +1,39 @@
+replicaCount: 1
+
+image:
+  repository: ernesto2397/personaplex-base
+  tag: "v1.0"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8998
+
+huggingface:
+  existingSecret: hf-token
+
+persistence:
+  enabled: true
+  size: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  mountPath: /cache
+  storageClassName: ""
+
+resources:
+  requests:
+    cpu: "4"
+    memory: "24Gi"
+    nvidia.com/gpu: "1"
+  limits:
+    cpu: "8"
+    memory: "32Gi"
+    nvidia.com/gpu: "1"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+ezua:
+  autoHelm: true
