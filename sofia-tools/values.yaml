@@ -1,0 +1,75 @@
+# ── Imagen ────────────────────────────────────────────────────────────────────
+image:
+  repository: ernesto2397/sofia-tools
+  tag: "v0.2"
+  pullPolicy: Always
+
+# ── Réplicas ──────────────────────────────────────────────────────────────────
+replicaCount: 1
+
+# ── Recursos (requeridos por Kyverno en PCAI) ─────────────────────────────────
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "2000m"
+    memory: "2Gi"
+
+# ── Servicio ──────────────────────────────────────────────────────────────────
+service:
+  port: 8100
+
+# ── Dominio del clúster — usado para construir el host del VirtualService ──────
+cluster:
+  domain: hpepcai3.demo.local
+  
+# ── System prompt — dejar vacío para usar el default del código ───────────────
+# Para personalizar sin rebuild, escribe el prompt aquí con el formato | (multilínea)
+# Ejemplo:
+# systemPrompt: |
+#   Eres Sofía, asistente virtual...
+systemPrompt: |
+    Eres Sofía, asistente virtual del Banco Nacional de Colombia.
+    REGLAS ESTRICTAS, síguelas siempre sin excepción:
+    Saluda al cliente si te saluda. Confirma lo que necesita antes de actuar.
+    1. Para preguntas sobre productos, requisitos, tarifas, reclamos, transferencias o créditos, usa consultar_politica con el tema correspondiente: apertura_cuentas, reclamos, creditos, transferencias, tarifas, tarjetas.
+    2. NUNCA llames consultar_cliente si el cliente no ha dado dígitos de su cédula. Pídela amablemente primero.
+    3. Convierte palabras numéricas a dígitos: cero=0, uno=1, dos=2, tres=3, cuatro=4, cinco=5, seis=6, siete=7, ocho=8, nueve=9.
+    4. Si el cliente da la cédula en partes, llama consultar_cliente con los dígitos que tenga; el sistema acumula automáticamente.
+    5. NUNCA reutilices la cédula de un turno anterior. Si el cliente la corrige, pídele que la repita completa.
+    6. Cuando la herramienta devuelva datos, úsalos directamente. NUNCA digas que no tienes acceso si la herramienta ya los entregó.
+    7. Responde en español colombiano, claro y conciso, máximo 2 oraciones. No leas toda la información de golpe, solo lo que preguntaron.
+    8. Usa transferir_agente solo cuando el cliente lo pida explícitamente.
+    9. Usa finalizar_llamada cuando el cliente se despida o diga que ya no necesita ayuda.
+
+# ── Variables de entorno — Servicios de IA ────────────────────────────────────
+llm:
+  url: "https://llm-tool.project-user-ernesto-garibay.serving.hpepcai3.demo.local/v1"
+  token: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjlobTctX21Wcm9wSkVwMTduR0dRWHdNWjZBWHhPX0dQZzFadWx0Zkh0aTQifQ.eyJhdWQiOlsiYXBpIiwiaXN0aW8tY2EiXSwiZXhwIjoxNzgwNjE4MjEyLCJpYXQiOjE3NzgwMjYyMTIsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiYWViMGZiYzctNGYyNi00ZjY3LWJhZjctNDhjZGM2MGZmMmE2Iiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJ1aSIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJpc3ZjLWVwLTE3NzgwMjYyMTI4NDUiLCJ1aWQiOiI0MGZjNTllNC1lMDQ3LTQzY2MtYTA4MS01NDk5N2JiZmM2OGEifX0sIm5iZiI6MTc3ODAyNjIxMiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OnVpOmlzdmMtZXAtMTc3ODAyNjIxMjg0NSJ9.ScgR9czrZI13XyIi0_KhE49j5YYHIDTKev_Icc44JF20c_C8DhqytImp_MsISbgoq_HlS1jq3bXh-CCafX9otVk0_rwS_1ws2y0UXxMot0R9RbjU63OoJTnhbA9QMdM8KwVByU3bPGQVVLrUToorT5NppCfEmBTTAjWbHsw7TZLorpJYUkI7Dxc4ZwmTwABJ--pnw-trRgaIWoj8z3AvkE28Yts0LtEK2thFffzEWeIW2mwRyOPGR_1fhcxyz4oQvJydwYVxG8FyJ2aNlXjQqIKT7aMbuGag9GanNKOe916jegzmDvFnr2gczK_ZjaskeUhuM1yqv2cUpkxW9iIvrA"
+  model: "hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4"
+
+asr:
+  url: "http://10.224.0.209:9000/v1/audio/transcriptions"
+  token: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjlobTctX21Wcm9wSkVwMTduR0dRWHdNWjZBWHhPX0dQZzFadWx0Zkh0aTQifQ.eyJhdWQiOlsiYXBpIiwiaXN0aW8tY2EiXSwiZXhwIjoxNzgwMjE1ODkyLCJpYXQiOjE3Nzc2MjM4OTIsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiOTA0NDRiNDEtZmMxZS00YWE2LWIyOGYtNzZhNGNmZjBlMTgwIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJ1aSIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJpc3ZjLWVwLTE3Nzc2MjM4OTI2MDgiLCJ1aWQiOiI4MzA4N2MyMy1kZmNkLTQzZDQtYjNlOC02ODQxYmUzMDBmMDMifX0sIm5iZiI6MTc3NzYyMzg5Miwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OnVpOmlzdmMtZXAtMTc3NzYyMzg5MjYwOCJ9.RRDAObY1TMqFCl0cAmkpoI72lNxwULLuiZ-ikuChpiDFxC8bMmAceStnZhksLhTy9xa-HjgzyOX5yIehD6Jxf2rnzK85W7ncUnmAQiJd1TpJWiU4jv4_zLUuc35UktAZfjq8jeZMe5GgrSevFf0Rve8qfddiQayuvrHtrCFjE8ii4CryyhGp8wqYPEe5f2_piM2XadiVnBSRFuj51qmCv_qTXhOjpPE3iDt9T4jdM76O50Ws1P9wqZ43_3JcO8XxdW4x4tDvsebR7-7K21oxm0Y3WQITx5zqlSJbAiEZgA_pTKTXgd8sSJ-mVMxCPSkOcnYe9WHoSTDFerfIDdazZQ"
+
+tts:
+  url: "http://10.224.0.207:9000/v1/audio/synthesize"
+  token: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjlobTctX21Wcm9wSkVwMTduR0dRWHdNWjZBWHhPX0dQZzFadWx0Zkh0aTQifQ.eyJhdWQiOlsiYXBpIiwiaXN0aW8tY2EiXSwiZXhwIjoxNzgwMjE1OTMxLCJpYXQiOjE3Nzc2MjM5MzEsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiMWQ1OTJhYjUtNmY2OC00ZjI3LWIyOGYtYjc1ODA5NDY0NGE2Iiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJ1aSIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJpc3ZjLWVwLTE3Nzc2MjM5MzE3MjYiLCJ1aWQiOiJjZmQ2OGJiZC1kYzYyLTRmNWQtYTg1NS1hMzU0ZDdkY2NiYjMifX0sIm5iZiI6MTc3NzYyMzkzMSwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OnVpOmlzdmMtZXAtMTc3NzYyMzkzMTcyNiJ9.YPgK04lcXbn_Zv_YZ_2m69t0HjoYECQf5lON7rqqOH724gzEMm81CsU4TH3HvbAb_UnI7PyaH3Wp0GUu5ITCIfBTeJy0_YuDdwxyashRjisZW1cjV-xQK_8Je5k-KIjVrhPScUi5xkpawsfiqI7adZCJdaXzDM6rv0PJUpslYoJo3wBqCPJ17ev2NGw5sPKx8jBqj3ZIuguKLHZUTBDbiuWnZOIYOao1BzcghRL9E-Nux7xTUBgNDVXlotnCXzeySAg7pYdltGrcaV9SepRa2Mry7pZFVRVPstRVo18Z6F5JbkyvIVwfETcy_vq9l7QXf8rfVXDmVdKcL5snIFo0ZA"
+  voice: "Magpie-Multilingual.ES-US.Isabela"
+
+# ── Integración Teams ─────────────────────────────────────────────────────────
+teams:
+  webhookUrl: "https://default105b2061b6694b3192ac24d304d195.dc.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/73f9280d203d436380bf00f4d73fa331/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=EfT95vVeWRDfHLABRhnWRC15ECUj7GVYeqjbkJNjf6E"
+
+# ── Storage GLFS ──────────────────────────────────────────────────────────────
+glfs:
+  pvcName: "kubeflow-shared-pvc"
+
+  clientes:
+    subPath: "banking/clientes"
+    mountPath: "/data/clientes"
+
+  politicas:
+    subPath: "banking/politicas"
+    mountPath: "/data/politicas"

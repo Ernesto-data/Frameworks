@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-virtual-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    hpe-ezua/app: {{ .Release.Name }}
+spec:
+  gateways:
+    - istio-system/ezaf-gateway
+  hosts:
+    - {{ .Release.Name }}-{{ .Release.Namespace }}.{{ .Values.cluster.domain }}
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: 80

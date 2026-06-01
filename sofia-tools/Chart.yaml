@@ -1,0 +1,14 @@
+apiVersion: v2
+name: sofia-tools
+description: Sofía — Agente de Voz Bancaria con Políticas | HPE Private Cloud AI
+type: application
+version: 1.2.0
+appVersion: "1.2.0"
+keywords:
+  - banking
+  - voice-ai
+  - pipecat
+  - hpe-pcai
+maintainers:
+  - name: Ernesto Garibay
+    email: ernesto.garibay@hpe.com

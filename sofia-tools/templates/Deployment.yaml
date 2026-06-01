@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    hpe-ezua/app: {{ .Release.Name }}
+    hpe-ezua/component: voice-agent
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        hpe-ezua/app: {{ .Release.Name }}
+        hpe-ezua/component: voice-agent
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: sofia-agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+
+          env:
+            - name: LLM_URL
+              value: {{ .Values.llm.url | quote }}
+            - name: LLM_TOKEN
+              value: {{ .Values.llm.token | quote }}
+            - name: LLM_MODEL
+              value: {{ .Values.llm.model | quote }}
+            - name: ASR_URL
+              value: {{ .Values.asr.url | quote }}
+            - name: ASR_TOKEN
+              value: {{ .Values.asr.token | quote }}
+            - name: TTS_URL
+              value: {{ .Values.tts.url | quote }}
+            - name: TTS_TOKEN
+              value: {{ .Values.tts.token | quote }}
+            - name: TTS_VOICE
+              value: {{ .Values.tts.voice | quote }}
+            - name: TEAMS_WEBHOOK_URL
+              value: {{ .Values.teams.webhookUrl | quote }}
+            - name: CLIENTES_PATH
+              value: {{ .Values.glfs.clientes.mountPath | quote }}
+            - name: POLITICAS_PATH
+              value: {{ .Values.glfs.politicas.mountPath | quote }}
+            {{- if .Values.systemPrompt }}
+            - name: SYSTEM_PROMPT
+              value: {{ .Values.systemPrompt | quote }}
+            {{- end }}
+
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
+
+          volumeMounts:
+            - name: glfs-storage
+              mountPath: {{ .Values.glfs.clientes.mountPath }}
+              subPath: {{ .Values.glfs.clientes.subPath }}
+              readOnly: true
+            - name: glfs-storage
+              mountPath: {{ .Values.glfs.politicas.mountPath }}
+              subPath: {{ .Values.glfs.politicas.subPath }}
+              readOnly: true
+            - name: tmp-vol
+              mountPath: /tmp
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+
+      volumes:
+        - name: glfs-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.glfs.pvcName }}
+        - name: tmp-vol
+          emptyDir: {}
