@@ -1,0 +1,10 @@
+apiVersion: v2
+name: litellm-gateway
+description: LiteLLM AI Gateway para HPE PCAI (con chargeback, virtual keys, Postgres incluido)
+version: 1.0.1
+appVersion: "Peñoles 1.0.1"
+
+dependencies:
+  - name: litellm-helm
+    version: "1.88.1"
+    repository: "oci://ghcr.io/berriai"

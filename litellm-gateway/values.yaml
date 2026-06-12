@@ -1,0 +1,104 @@
+# =========================================================
+# values.yaml — litellm-gateway (chart propio para PCAI)
+# =========================================================
+
+litellm-helm:
+
+  image:
+    repository: ghcr.io/berriai/litellm-non_root
+    tag: main-stable
+
+  replicaCount: 1
+
+  masterkeySecretName: "litellm-gateway-masterkey-custom"
+  masterkeySecretKey: "masterkey"
+
+  # Postgres propio (Deployment simple, ver templates/postgres.yaml)
+  db:
+    useExisting: true
+    deployStandalone: false
+    endpoint: litellm-postgres
+    database: litellm
+    url: postgresql://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@$(DATABASE_HOST)/$(DATABASE_NAME)
+    secret:
+      name: litellm-postgres-secret
+      usernameKey: username
+      passwordKey: password
+
+  migrationJob:
+    enabled: true
+    retries: 3
+    backoffLimit: 4
+    disableSchemaUpdate: false
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "250m"
+      limits:
+        memory: "4Gi"
+        cpu: "500m"
+
+  envVars:
+    LITELLM_SALT_KEY: "sk-CAMBIA-ESTA-SALT-KEY"
+    MODEL_NAME: "PENDIENTE-llenar-cuando-haya-modelo"
+    MODEL_API_BASE: "PENDIENTE-url-endpoint-mlis/v1"
+    MODEL_API_KEY: "PENDIENTE-token-mlis"
+    FORWARDED_ALLOW_IPS: "*"
+
+  proxy_config:
+    model_list:
+      - model_name: fake-openai-endpoint
+        litellm_params:
+          model: openai/fake
+          api_key: fake-key
+          api_base: https://exampleopenaiendpoint-production.up.railway.app/
+
+      - model_name: llama-3.1-70b
+        litellm_params:
+          model: os.environ/MODEL_NAME
+          api_base: os.environ/MODEL_API_BASE
+          api_key: os.environ/MODEL_API_KEY
+
+    general_settings:
+      store_model_in_db: true
+      master_key: os.environ/PROXY_MASTER_KEY
+
+    litellm_settings:
+      drop_params: true
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "1"
+  
+  volumes:
+    - name: cache-dir
+      emptyDir: {}
+    - name: tmp-dir
+      emptyDir: {}
+    - name: npm-dir
+      emptyDir: {}
+
+  volumeMounts:
+    - name: cache-dir
+      mountPath: /.cache
+    - name: tmp-dir
+      mountPath: /tmp
+    - name: npm-dir
+      mountPath: /.npm
+
+ezua:
+  autoHelm: true
+  virtualService:
+    enabled: true
+    host: "litellm-pcai-project-user-ernesto-garibay.hpepcai3.demo.local"
+    gateway: "istio-system/ezaf-gateway"
+    serviceName: ""
+    servicePort: 80

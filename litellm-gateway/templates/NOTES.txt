@@ -1,0 +1,31 @@
+LiteLLM Gateway desplegado.
+
+1. Verifica el nombre real del Service del subchart:
+   kubectl get svc -n {{ .Release.Namespace }} | grep litellm
+
+   Debe verse algo como: {{ .Release.Name }}-litellm-helm
+   Si el nombre es distinto, edita templates/virtualservice.yaml
+   y ajusta el campo "host" del destination.
+
+2. Verifica el job de migraciones Prisma:
+   kubectl get jobs -n {{ .Release.Namespace }}
+   kubectl logs job/{{ .Release.Name }}-litellm-helm-db-migration -n {{ .Release.Namespace }}
+
+3. Verifica el pod del proxy:
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl logs deploy/{{ .Release.Name }}-litellm-helm -n {{ .Release.Namespace }}
+
+4. Prueba el endpoint (interno, ClusterIP):
+   kubectl run -it --rm curltest --image=curlimages/curl -n {{ .Release.Namespace }} -- \
+     curl http://{{ .Release.Name }}-litellm-helm:4000/v1/models \
+     -H "Authorization: Bearer sk-CAMBIA-ESTA-MASTER-KEY"
+
+5. Prueba el endpoint externo (via VirtualService):
+   https://{{ .Values.ezua.virtualService.host }}/ui
+   (Login con el LITELLM_MASTER_KEY)
+
+6. Crea virtual keys / teams para chargeback:
+   curl -X POST https://{{ .Values.ezua.virtualService.host }}/team/new \
+     -H "Authorization: Bearer sk-CAMBIA-ESTA-MASTER-KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"team_alias": "equipo-cliente-x", "max_budget": 100}'

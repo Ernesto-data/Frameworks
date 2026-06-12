@@ -1,0 +1,23 @@
+{{- if .Values.ezua.virtualService.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}-vs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  hosts:
+    - {{ .Values.ezua.virtualService.host | quote }}
+  gateways:
+    - {{ .Values.ezua.virtualService.gateway | quote }}
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: {{ .Release.Name | quote }}
+            port:
+              number: {{ .Values.ezua.virtualService.servicePort }}
+{{- end }}
